@@ -1,0 +1,168 @@
+<html>
+  <script src="node_modules/jquery/dist/jquery.min.js"></script>
+
+  <script src="node_modules/jexcel/dist/jexcel.js"></script>
+  <link
+    rel="stylesheet"
+    href="node_modules/jexcel/dist/jexcel.css"
+    type="text/css"
+  />
+
+  <script src="node_modules/jsuites/dist/jsuites.js"></script>
+  <link
+    rel="stylesheet"
+    href="node_modules/jsuites/dist/jsuites.css"
+    type="text/css"
+  />
+
+  <body>
+    <div id="spreadsheet"></div>
+    <div>
+      <input
+        type="button"
+        onclick="spreadsheet.setData(data2);"
+        value="refresh"
+      />
+    </div>
+  </body>
+  <script>
+    let getJson = function (path) {
+      let json = null;
+      $.ajaxSetup({ async: false });
+      $.getJSON(path)
+        .done(function (data) {
+          json = data;
+        })
+        .fail(function () {
+          alert("メッセージ読み込みエラー");
+        });
+      $.ajaxSetup({ async: true });
+      return json;
+    };
+
+    let getColumns = function (column, cols) {
+      let columns = [];
+      for (let index = 1; index <= cols; index++) {
+        columns.push(column);
+      }
+      return columns;
+    };
+
+    let contextMenu = function (obj, x, y, e) {
+      var items = [];
+      if (x) {
+        // Insert a new column
+        if (obj.options.allowInsertColumn == true) {
+          items.push({
+            title: obj.options.text.insertANewColumnBefore,
+            onclick: function () {
+              obj.insertColumn(1, parseInt(x), 0, column);
+            },
+          });
+        }
+      }
+
+      if (y) {
+        // Insert new row
+        if (obj.options.allowInsertRow == true) {
+          items.push({
+            title: obj.options.text.insertANewRowAfter,
+            onclick: function () {
+              obj.insertRow(1, parseInt(y));
+            },
+          });
+        }
+      }
+
+      // Line
+      items.push({ type: "line" });
+
+      // Save
+      if (obj.options.allowExport) {
+        items.push({
+          title: obj.options.text.saveAs,
+          shortcut: "Ctrl + S",
+          onclick: function () {
+            obj.download();
+          },
+        });
+      }
+      return items;
+    };
+
+    let initSpreadsheet = function (data, options) {
+      let spreadsheet = $("#spreadsheet").jexcel(options);
+      spreadsheet.setData(data);
+      return spreadsheet;
+    };
+
+    let data = [
+      [1, 1, 1, 1, 1, 1, 1, 1],
+      [2, 3, 4, 5, 6, 7, 8],
+      [2, 3, 4, 5, 6, 7, 8],
+      [2, 3, 4, 5, 6, 7, 8],
+      [null, 2, 3, 4, null, null, null, null],
+    ];
+
+    const MIN_COLUMNS = 5;
+    let cols = MIN_COLUMNS > data[0].length ? MIN_COLUMNS : data[0].length;
+    let source = [
+      { id: null, name: null },
+      { id: 1, name: "first" },
+      { id: 2, name: "second" },
+      { id: 3, name: "third" },
+      { id: 4, name: "fourth" },
+      { id: 5, name: "fifth" },
+      { id: 6, name: "sixth" },
+      { id: 7, name: "seventh" },
+      { id: 8, name: "eighth" },
+    ];
+    let columns = getColumns(
+      { type: "dropdown", width: 100, source: source },
+      cols
+    );
+
+    let text = getJson("ja_JA.json");
+    let options = {
+      columns: columns,
+      text: text,
+      minDimensions: [MIN_COLUMNS, MIN_COLUMNS],
+      contextMenu: contextMenu,
+      csvFileName: "csvFileName",
+      about: false,
+      columnSorting: false,
+      columnDrag: false,
+      columnResize: true,
+      rowDrag: false,
+      rowResize: true,
+      editable: true,
+      allowInsertRow: true,
+      allowManualInsertRow: false,
+      allowInsertColumn: true,
+      allowManualInsertColumn: false,
+      allowDeleteRow: false,
+      allowDeleteColumn: false,
+      allowRenameColumn: false,
+      allowComments: false,
+      wordWrap: true,
+      selectionCopy: true,
+    };
+
+    let spreadsheet = initSpreadsheet(data, options);
+
+    let json = spreadsheet.getJson();
+    console.log(json);
+
+    let data2 = [
+      [2, 3, 4, 5, 6, 7, 8],
+      [2, 3, 4, 5, 6, 7, 8],
+      [2, 3, 4, 5, 6, 7, 8],
+      [2, 3, 4, 5, 6, 7, 8],
+      [2, 3, 4, 5, 6, 7, 8],
+      [2, 3, 4, 5, 6, 7, 8],
+      [2, 3, 4, 5, 6, 7, 8],
+      [null, 5, 6, 7, null, null, null],
+    ];
+
+  </script>
+</html>
